@@ -30,14 +30,14 @@ app.post("/identify-image", upload.single("image"), async (req, res) => {
   console.log(`Processing image: ${imagePath}`);
 
   // Turn local file path into public URL
-const serverUrl = process.env.SERVER_URL || "http://localhost:5001"; // set SERVER_URL in .env
+/*const serverUrl = process.env.SERVER_URL || "http://localhost:5001"; // set SERVER_URL in .env
 const publicUrl = `${serverUrl}/uploads/${req.file.filename}`;
-console.log(`Public image URL: ${publicUrl}`);
+console.log(`Public image URL: ${publicUrl}`);*/
 
-/*const serverUrl = req.protocol + "://" + req.get("host");
+const serverUrl = req.protocol + "://" + req.get("host");
 const publicUrl = `${serverUrl}/uploads/${req.file.filename}`;
 console.log(`Public image URL: ${publicUrl}`);
- */
+ 
 
   //imagePath needs to be the url at this point, in order to work
 
