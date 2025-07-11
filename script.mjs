@@ -12,7 +12,9 @@ const PORT = 5001;
 dotenv.config();
 
 // Allow only frontend origin
-app.use(cors({ origin: process.env.FRONTEND_URL ||'http://localhost:3000' }));//change to public url
+app.use(cors({ origin: process.env.FRONTEND_URL
+      ? [process.env.FRONTEND_URL, 'http://localhost:3000']
+      : 'http://localhost:3000' }));//change to public url
 app.use(bodyParser.json());
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
