@@ -90,6 +90,7 @@ app.post("/getPriceEndpoint", async (req, res) => {
         engine: "ebay",
         _nkw: item_name,
         ebay_domain: "ebay.com",
+        category_id: "6001",
         api_key: serpApiKey
       }, (json) => {
         console.log(json); // Full response
