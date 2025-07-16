@@ -116,25 +116,34 @@ app.post("/getPriceEndpoint", async (req, res) => {
     })*/
 
     const filteredResults = await Promise.all(
-  result.map(async (result) => {
-    let filterPrompt = `Your role is to determine whether this ebay result is relevant to the user's search, based on the ${item_name} and the result title, ${result.title}.
+  result.map(async (result, i) => {
+    try {
+      if (!result || !result.title) {
+        console.warn(`⚠️ Skipping item at index ${i} due to missing title`);
+        return null;
+      }
 
-    for example, if ${item_name} is a car, results are relevant if the result title ${result.title} matches. But subproducts like wheels or tyres that include ${item_name} are not relevant.
+      const filterPrompt = `Your role is to determine whether this ebay result is relevant to the user's search, based on the ${item_name} and the result title, ${result.title}...
 
-    if it's relevant, return true. otherwise, return false;
-    `;
+      if it's relevant, return true. otherwise, return false;`;
 
-    const relevantResults = await openai.chat.completions.create({
-      model: "gpt-4",
-      messages: [{ role: "user", content: filterPrompt }],
-      temperature: 0.7,
-      max_tokens: 50, // reduce this if you only need "true"/"false"
-    });
+      const relevantResults = await openai.chat.completions.create({
+        model: "gpt-4",
+        messages: [{ role: "user", content: filterPrompt }],
+        temperature: 0.7,
+        max_tokens: 50,
+      });
 
-    const booleanAnswer = relevantResults.choices[0].message.content.trim().toLowerCase();
-    const isRelevant = booleanAnswer === "true";
+      const answer = relevantResults.choices[0].message.content.trim().toLowerCase();
+      const isRelevant = answer === "true";
 
-    return isRelevant ? result : null;
+      console.log(`🧠 GPT result for item ${i}: ${answer}`);
+      return isRelevant ? result : null;
+
+    } catch (err) {
+      console.error(`❌ Error filtering item ${i}:`, err);
+      return null;
+    }
   })
 );
 
