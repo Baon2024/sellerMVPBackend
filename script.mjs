@@ -123,9 +123,28 @@ app.post("/getPriceEndpoint", async (req, res) => {
         return null;
       }
 
-      const filterPrompt = `Your role is to determine whether this ebay result is relevant to the user's search, based on the ${item_name} and the result title, ${result.title}...
+      //this dynamic use of item_name presumes that all item searches will be cars, for this specific use-case
 
-      if it's relevant, return true. otherwise, return false;`;
+      const filterPrompt = `
+You are a product filter. The user is searching for an actual product: "${item_name}" (not accessories or parts).
+
+You're given a result from eBay: "${result.title}".
+
+Your job is to determine if the result is exactly the full product, not related parts, accessories, documents, manuals, covers, tires, wheels, bumpers, filters, mirrors, etc.
+
+Examples of NON-relevant results:
+- ${item_name} i20 wheel
+- ${item_name} i20 manual
+- ${item_name} i20 bumper
+
+Examples of relevant results:
+- 2016 ${item_name} Hatchback
+- Used ${item_name}, 1.2L Petrol
+
+Question: Is this eBay result the full product "${item_name}" and not a related part?
+
+Respond with exactly **true** or **false** only.
+`;
 
       const relevantResults = await openai.chat.completions.create({
         model: "gpt-4",
