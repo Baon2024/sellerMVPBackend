@@ -93,7 +93,10 @@ app.post("/getPriceEndpoint", async (req, res) => {
 
     console.log("Result array:", result);
 
-     let termsToFilter = ["wheel", "tyre", "exhaust"]
+
+    //need to imrpove and create specific filtering logic, so onbly relevant results are checked for price
+    //something conditional and dynamic, so if search term does not include x term, then results that include x term are filtered out
+    let termsToFilter = ["wheel", "tyre", "exhaust"]
 
     const filteredResults = result.filter((result) => {
       for (const term of termsToFilter) {
@@ -108,7 +111,9 @@ app.post("/getPriceEndpoint", async (req, res) => {
 
     })
 
-    console.log("filteredResults are: ", filteredResults);
+    // - and/or map/filter through each and send to an LLM to judge whether result is relevant based on title comparison to item_name
+    //would likely need to add delay if using free cohere, or use openai api_key
+
 
     // Loop through prices
     filteredResults.forEach(item => {
