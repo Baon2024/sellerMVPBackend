@@ -6,10 +6,17 @@ import multer from 'multer';
 import fs from 'fs';
 import { getJson } from 'serpapi';
 import { Client } from '@gradio/client';
+import OpenAI from 'openai';
+
+
 
 const app = express();
 const PORT = 5001;
 dotenv.config();
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY // ✅ or hardcode for testing
+});
 
 // Allow only frontend origin
 app.use(cors({ origin: process.env.FRONTEND_URL
@@ -93,9 +100,9 @@ app.post("/getPriceEndpoint", async (req, res) => {
 
     console.log("Result array:", result);
 
-     let termsToFilter = ["wheel", "tyre", "exhaust"]
+     //let termsToFilter = ["wheel", "tyre", "exhaust"]
 
-    const filteredResults = result.filter((result) => {
+    /*const filteredResults = result.filter((result) => {
       for (const term of termsToFilter) {
         if (item_name.toLowerCase().includes(term) && result.title.toLowerCase().includes(term)) {
             return true; //only want to return item 
@@ -106,12 +113,40 @@ app.post("/getPriceEndpoint", async (req, res) => {
         }
       }
 
-    })
+    })*/
 
-    console.log("filteredResults are: ", filteredResults);
+    const filteredResults = await Promise.all(
+  result.map(async (result) => {
+    let filterPrompt = `Your role is to determine whether this ebay result is relevant to the user's search, based on the ${item_name} and the result title, ${result.title}.
+
+    for example, if ${item_name} is a car, results are relevant if the result title ${result.title} matches. But subproducts like wheels or tyres that include ${item_name} are not relevant.
+
+    if it's relevant, return true. otherwise, return false;
+    `;
+
+    const relevantResults = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: filterPrompt }],
+      temperature: 0.7,
+      max_tokens: 50, // reduce this if you only need "true"/"false"
+    });
+
+    const booleanAnswer = relevantResults.choices[0].message.content.trim().toLowerCase();
+    const isRelevant = booleanAnswer === "true";
+
+    return isRelevant ? result : null;
+  })
+);
+
+console.log("filteredResults are: ", filteredResults);
+
+// Remove nulls (non-relevant items)
+const finalResults = filteredResults.filter((item) => item !== null);
+
+    console.log("filteredResults are: ", finalResults);
 
     // Loop through prices
-    filteredResults.forEach(item => {
+    finalResults.forEach(item => {
       console.log("item.price is", item.price);
       if (lowest_price === 0) {
         lowest_price = item.price.extracted;
