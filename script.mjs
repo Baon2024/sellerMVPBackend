@@ -93,8 +93,23 @@ app.post("/getPriceEndpoint", async (req, res) => {
 
     console.log("Result array:", result);
 
+     let termsToFilter = ["wheel", "tyre", "exhaust"]
+
+    const filteredResults = result.filter((result) => {
+      for (const term of termsToFilter) {
+        if (item_name.toLowerCase().includes(term) && result.title.toLowerCase().includes(term)) {
+            return true; //only want to return item 
+        } else if (item_name.include(term)) { //do i need this, as surely term should be in result title to be accurate?
+            return true;
+        } else {
+            return false;
+        }
+      }
+
+    })
+
     // Loop through prices
-    result.forEach(item => {
+    filteredResults.forEach(item => {
       console.log("item.price is", item.price);
       if (lowest_price === 0) {
         lowest_price = item.price.extracted;
