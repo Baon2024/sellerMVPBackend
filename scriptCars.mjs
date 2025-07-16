@@ -114,6 +114,36 @@ app.post("/getPriceEndpoint", async (req, res) => {
     // - and/or map/filter through each and send to an LLM to judge whether result is relevant based on title comparison to item_name
     //would likely need to add delay if using free cohere, or use openai api_key
 
+    /*
+    const filteredResults = await Promise.all(
+  result.map(async (result) => {
+    let filterPrompt = `Your role is to determine whether this ebay result is relevant to the user's search, based on the ${item_name} and the result title, ${result.title}.
+
+    for example, if ${item_name} is a car, results are relevant if the result title ${result.title} matches. But subproducts like wheels or tyres that include ${item_name} are not relevant.
+
+    if it's relevant, return true. otherwise, return false;
+    `;
+
+    const relevantResults = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: filterPrompt }],
+      temperature: 0.7,
+      max_tokens: 50, // reduce this if you only need "true"/"false"
+    });
+
+    const booleanAnswer = relevantResults.choices[0].message.content.trim().toLowerCase();
+    const isRelevant = booleanAnswer === "true";
+
+    return isRelevant ? result : null;
+  })
+);
+
+console.log("filteredResults are: ", filteredResults);
+
+// Remove nulls (non-relevant items)
+const finalResults = filteredResults.filter((item) => item !== null);
+    */
+
 
     // Loop through prices
     filteredResults.forEach(item => {
