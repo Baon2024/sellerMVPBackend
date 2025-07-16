@@ -90,7 +90,6 @@ app.post("/getPriceEndpoint", async (req, res) => {
         engine: "ebay",
         _nkw: item_name,
         ebay_domain: "ebay.com",
-        category_id: "6001",
         api_key: serpApiKey
       }, (json) => {
         console.log(json); // Full response
@@ -133,14 +132,6 @@ You're given a result from eBay: "${result.title}".
 
 Your job is to determine if the result is exactly the full product, not related parts, accessories, documents, manuals, covers, tires, wheels, bumpers, filters, mirrors, etc.
 
-Examples of NON-relevant results:
-- ${item_name} i20 wheel
-- ${item_name} i20 manual
-- ${item_name} i20 bumper
-
-Examples of relevant results:
-- 2016 ${item_name} Hatchback
-- Used ${item_name}, 1.2L Petrol
 
 Question: Is this eBay result the full product "${item_name}" and not a related part?
 
