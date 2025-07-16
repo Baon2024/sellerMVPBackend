@@ -152,7 +152,9 @@ console.log("filteredResults are: ", filteredResults);
 // Remove nulls (non-relevant items)
 const finalResults = filteredResults.filter((item) => item !== null);
 
-    console.log("filteredResults are: ", finalResults);
+    console.log("finalresults are: ", finalResults);
+
+    console.log("finalResults number: ", finalResults.length, "and original results length: ", result.length);
 
     // Loop through prices
     finalResults.forEach(item => {
