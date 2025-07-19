@@ -91,6 +91,10 @@ app.post("/getPriceEndpoint", async (req, res) => {
   //2 - get item listings from ebay ebay based on item_name
   const itemListings = await getListings(ebayUrl, ebayAccessToken);
 
+  console.log("the listing items returned from ebay, as itemListings variable, are: ", itemListings);
+
+  if (Array.isArray(itemListings) && itemListings.length > 0) {
+
   //3 - remove item Listings whcih are the wrong condition
 const itemListingsCorrectCondition = itemListings.filter(item => item.condition === item_condition);
  
@@ -161,6 +165,10 @@ let lowestPrice = 0;
   let lowest_price = lowestPrice
 
   res.status(200).json({ lowest_price }); //or return second or third lowest-price
+  } else {
+    let lowest_price = `no results for ${item_name}` 
+    res.status(200).json({ lowest_price })
+  }
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on http://localhost:${PORT}`));
