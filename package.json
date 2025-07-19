@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "build": "echo 'No build step'",
-    "start": "node script.mjs",
+    "start": "node serverEbayAPI.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
