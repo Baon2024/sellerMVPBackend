@@ -1,4 +1,4 @@
-import fetch from 'node-fetch';
+//import fetch from 'node-fetch';
 import dotenv from 'dotenv';
 
 dotenv.config();
@@ -128,7 +128,7 @@ export async function convertToGBP(relevantResults) {
 
             return newResult;
         } else if (result.price.currency === 'CAD') {
-            const cadToGbpRate = await getCADToGBPExchangeRate();
+            const cadToGbpRate = await getCADToGBPConversion();
             let gdpPrice = (parseFloat(result.price.value) * cadToGbpRate).toFixed(2);
 
             let newResult = {
