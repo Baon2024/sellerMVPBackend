@@ -82,6 +82,10 @@ let listingsList = data.itemSummaries
 
 let itemSearchResults = []
 
+if (data.total === 0) {
+    return null;
+}
+
 for (const listing of listingsList) {
     console.log(listing.title)
 
