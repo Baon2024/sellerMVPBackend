@@ -25,7 +25,8 @@ const openai = new OpenAI({
 
 const app = express();
 const PORT = process.env.PORT || 5005;
-console.log("PORT is: ", PORT);
+console.log("Env PORT:", process.env.PORT);
+console.log("Using PORT:", PORT);
 
 dotenv.config();
 
