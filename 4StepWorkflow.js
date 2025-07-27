@@ -69,10 +69,10 @@ console.log(`Public image URL: ${publicUrl}`);*/
 
   //imagePath needs to be the url at this point, in order to work
 
-  const client = await Client.connect("https://995c4ffded902dc562.gradio.live");//change to hf space url
+  const client = await Client.connect("https://5e602bdcb111f115b7.gradio.live");//change to hf space url
   //const client = await Client.connect("Baon2024/SellerMVPPython"); //replace with publically-available url for getReg hf space
   const result = await client.predict("/predict", {
-    image_path: fullLocalPath,
+    image_path: publicUrl,
   });
 
   console.log("result from hfSpace is: ", result.data);
