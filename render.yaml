@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: your-app-name
+    env: node
+    buildCommand: pnpm install
+    startCommand: pnpm start
+    plan: free
