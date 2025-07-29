@@ -81,7 +81,7 @@ console.log("imageToSend is: ", imageToSend, "and isProd is: ", isProd);
 
   //imagePath needs to be the url at this point, in order to work
 
-  const client = await Client.connect("Baon2024/getReg");//change to hf space url
+  const client = await Client.connect("https://0995db9180328bd42d.gradio.live/");
   //const client = await Client.connect("Baon2024/SellerMVPPython"); //replace with publically-available url for getReg hf space
   const result = await client.predict("/predict", {
     image_path: imageToSend,
@@ -277,36 +277,64 @@ console.log("🛠️ Damage Assessment:", damageAssessment);
   let fakePrice = "10,000" //would actually need a function here to draw average recent resell price for excellent used car, based on model
   //using Bob's data, or some other 3rd party.
   
-  let scruffPrice = "50"
+  let scruffPrice = "50"//really call on dataset of rices for different tyes of damage
 
-  let assessedPriceAfterDamage = `You are a used car assessor. Your role is to assess how much the car is worth, based on the data provided to you.
-  
-  
-  You have been provided with a damage assessment for the car: ${damageAssessment}. Recent used cars of the same model and sub-model have sold for: £${fakePrice}.
+  const tools = [
+  {
+    type: "function",
+    function: {
+      name: "return_resell_value",
+      description: "Returns the resell value of the car as a JSON object.",
+      parameters: {
+        type: "object",
+        properties: {
+          resellValue: {
+            type: "number",
+            description: "The estimated resell value of the car in GBP.",
+          },
+        },
+        required: ["resellValue"],
+      },
+    },
+  },
+];
 
-  Each scruff or scratch deducts £${scruffPrice} from the overall resell value of the car.
-
-  Based on this information, calculate the resell value of the car, and return strictly in this JSON format: [{ resellValue: /price-as-number/}] 
-  `
   const response = await openai.chat.completions.create({
-        model: "gpt-4",
-        messages: [{ role: "user", content: assessedPriceAfterDamage }],
-        temperature: 0.0,
-        max_tokens: 700,
-      });
+  model: "gpt-4",
+  messages: [
+    {
+      role: "user",
+      content: `
+        You are a used car value assessor.
 
-  const resellResponse = response.choices[0].message.content.trim()
-  console.log("value of used car calculated as: , ", resellResponse)
-  let dejsonedPrice = JSON.parse(resellResponse);
-  console.log("dejsonedPrice is: ", dejsonedPrice)
-  let finalPrice = dejsonedPrice[0].resellValue;
-  console.log("finalPrice after array and object destructering is: ", finalPrice);
+        Recent used cars of the same model and sub-model have sold for: £${fakePrice}.
+        The car has the following damage assessment: ${damageAssessment}
+        Each scratch or dent deducts ${scruffPrice} from the resell value of $${fakePrice}.
+
+        Return the final resell value using the return_resell_value function.
+      `,
+    },
+  ],
+  temperature: 0,
+  tools,
+  tool_choice: { type: "function", function: { name: "return_resell_value" } },
+});
+
+
+const argsJSON = response.choices[0].message.tool_calls[0].function.arguments;
+console.log("argsJSON is ", argsJSON)
+const parsed = JSON.parse(argsJSON);
+console.log("parsed is ", parsed)
+const finalPrice = parsed.resellValue;
+
+console.log("✅ Final price is:", finalPrice);
+res.status(200).json({ finalPrice });
 
   //in longer term, if we have a dataset of used car sales, with columns like model, condition, price
   //would be straightforward to train via regression a model to predict sale price
   //and could then call it here to generate price, one car per call. 
 
-  res.status(200).json({ finalPrice })//return condition too?
+  //res.status(200).json({ finalPrice })//return condition too?
 });
 
 app.listen(PORT, () => console.log(`✅ Server running on PORT ${PORT}`));
