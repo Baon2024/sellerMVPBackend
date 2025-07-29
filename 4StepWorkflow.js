@@ -81,7 +81,7 @@ console.log("imageToSend is: ", imageToSend, "and isProd is: ", isProd);
 
   //imagePath needs to be the url at this point, in order to work
 
-  const client = await Client.connect("https://0995db9180328bd42d.gradio.live/");
+  const client = await Client.connect("Baon2024/getReg");
   //const client = await Client.connect("Baon2024/SellerMVPPython"); //replace with publically-available url for getReg hf space
   const result = await client.predict("/predict", {
     image_path: imageToSend,
