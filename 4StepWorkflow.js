@@ -237,14 +237,41 @@ const base64Images = await Promise.all(
 const messages = [
   {
     role: "system",
-    content: "You are a used car examiner. Identify visible damage like dents or scratches."
+    content: `You are a used car examiner.
+
+You will be given 4 car images (one per side). Your job is to:
+1. Determine if there is **any visible damage** (scratches, dents, broken lights, etc.).
+2. If so, count each type of damage and return the result.
+
+❗️IMPORTANT:
+- Return strictly raw JSON.
+- ❌ Do NOT include markdown, backticks, explanations, or labels.
+- ✅ Only output one of the following:
+
+If damage exists:
+{
+  "damageExists": true,
+  "damageBreakdown": {
+    "scratches": number,
+    "dents": number,
+    "brokenLights": number,
+    "comments": string
+  }
+}
+
+If no damage is visible:
+{
+  "damageExists": false,
+  "damageBreakdown": null
+}
+`
   },
   {
     role: "user",
     content: [
       {
         type: "text",
-        text: "These are four images of a car from each side. Assess damage."
+        text: "These are four images of a car from each side. Assess for visible damage and return JSON only."
       },
       ...base64Images.map(base64 => ({
         type: "image_url",
@@ -255,7 +282,6 @@ const messages = [
     ]
   }
 ];
-
 console.log("value of base64 images and Messages are: ", messages);
 
 
@@ -269,15 +295,20 @@ const visionResponse = await openai.chat.completions.create({
 const damageAssessment = visionResponse.choices[0].message.content;
 console.log("🛠️ Damage Assessment:", damageAssessment);
 
+let damageAssessmentParsed = JSON.parse(damageAssessment)
+console.log("damageassesmentParsed is ", damageAssessmentParsed)
+
 
 //might also want agentAssessor to provide label: Like New, Very Good, Good, et cetera
 //whatever labels exist for used cars, so could then draw nearest real sale prices for car model, or just average discount based on condition
 
 //now, use detailedCarInfo to generate fake price here, then calculatye rice er tye of damage in same section, to deduct
-  let fakePrice = "10,000" //would actually need a function here to draw average recent resell price for excellent used car, based on model
+  let fakePrice = 10000 //would actually need a function here to draw average recent resell price for excellent used car, based on model
   //using Bob's data, or some other 3rd party.
   
-  let scruffPrice = "50"//really call on dataset of rices for different tyes of damage
+  let scruffPrice = 50//really call on dataset of rices for different tyes of damage
+  let dentPrice = 50
+  let brokenLightPrice = 100
 
   const tools = [
   {
@@ -299,22 +330,43 @@ console.log("🛠️ Damage Assessment:", damageAssessment);
   },
 ];
 
+//need to relace damage assessment, with damageassesment subkey of total numbers of minor and major items of damage
+
+let secondMessage = [
+  {
+    role: "user",
+    content: `
+You are a used car value assessor.
+
+Recent used cars of the same model and sub-model in excellent condition have sold for: £${fakePrice}.
+
+${
+  damageAssessmentParsed.damageExists === true
+    ? `The car has the following damage assessment:\n${Object.entries(damageAssessmentParsed.damageBreakdown)
+        .filter(([key]) => key !== "comments")
+        .map(([key, value]) => `- ${key}: ${value}x`)
+        .join("\n")}
+
+Each scratch deducts £${scruffPrice} from the resell value.
+Each dent deducts £${dentPrice}.
+Each broken light deducts £${brokenLightPrice}.
+
+For each type of damage present, calculate the total deduction by multiplying the deduction amount by the number of occurrences.
+
+Then, calculate the total deduction sum of these deductions (if there are multiple types). if there is only one type of damage, then the total deduction is the same as that total category deduction cost.
+
+Finally, subtract the total deduction from £${fakePrice} and return the final resell value using the return_resell_value function.`
+    : `The car has no visible damage. Return the final resell value of £${fakePrice} using the return_resell_value function.`
+}
+    `,
+  },
+];
+
+  console.log("secondMessage is ", secondMessage)
+
   const response = await openai.chat.completions.create({
   model: "gpt-4",
-  messages: [
-    {
-      role: "user",
-      content: `
-        You are a used car value assessor.
-
-        Recent used cars of the same model and sub-model have sold for: £${fakePrice}.
-        The car has the following damage assessment: ${damageAssessment}
-        Each scratch or dent deducts ${scruffPrice} from the resell value of $${fakePrice}.
-
-        Return the final resell value using the return_resell_value function.
-      `,
-    },
-  ],
+  messages: secondMessage,
   temperature: 0,
   tools,
   tool_choice: { type: "function", function: { name: "return_resell_value" } },
@@ -327,8 +379,18 @@ const parsed = JSON.parse(argsJSON);
 console.log("parsed is ", parsed)
 const finalPrice = parsed.resellValue;
 
+let damageAssessmentBreakdown = damageAssessmentParsed.damageBreakdown
+console.log("damageAssessmentBreakdown is: ", damageAssessmentBreakdown);
+
+
+let originalPrice = fakePrice
 console.log("✅ Final price is:", finalPrice);
-res.status(200).json({ finalPrice });
+
+
+//also return original damageAssessment report?
+res.status(200).json({ finalPrice, damageAssessmentBreakdown, originalPrice });
+//return final rice, rice before discount, and markdowns for each damage (if any)
+//if damageAssessedarsed exists, return it. otherwise, diont
 
   //in longer term, if we have a dataset of used car sales, with columns like model, condition, price
   //would be straightforward to train via regression a model to predict sale price
