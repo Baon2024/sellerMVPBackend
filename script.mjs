@@ -45,7 +45,7 @@ console.log(`Public image URL: ${publicUrl}`);*/
 
 
 const serverUrl = req.protocol + "://" + req.get("host");
-const publicUrl = `"https://sellermvpbackend.onrender.com"/uploads/${req.file.filename}`;
+const publicUrl = `https://sellermvpbackend.onrender.com/uploads/${req.file.filename}`;
 console.log(`Public image URL: ${publicUrl}`);
  
 
