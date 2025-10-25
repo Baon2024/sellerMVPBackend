@@ -43,8 +43,9 @@ app.post("/identify-image", upload.single("image"), async (req, res) => {
 const publicUrl = `${serverUrl}/uploads/${req.file.filename}`;
 console.log(`Public image URL: ${publicUrl}`);*/
 
+
 const serverUrl = req.protocol + "://" + req.get("host");
-const publicUrl = `${serverUrl}/uploads/${req.file.filename}`;
+const publicUrl = `"https://sellermvpbackend.onrender.com"/uploads/${req.file.filename}`;
 console.log(`Public image URL: ${publicUrl}`);
  
 
@@ -56,9 +57,25 @@ console.log(`Public image URL: ${publicUrl}`);
     image_path: publicUrl,
   });
 
+  console.log("Raw result from HF Space:", JSON.stringify(result, null, 2));
+
+    // Defensive check before parsing
+    if (!result || !result.data || !Array.isArray(result.data) || !result.data[0]) {
+      console.error("Unexpected HF response:", result);
+      return res.status(500).json({ error: "Invalid response from Hugging Face Space" });
+    }
+
+ 
+    
+
+
   console.log("result from hfSpace is: ", result.data);
   // Step 1: Get first item in array
     const jsonString = result.data[0];
+    if (typeof jsonString !== "string") {
+      console.error("HF response data[0] is not a string:", jsonString);
+      return res.status(500).json({ error: "Hugging Face returned invalid JSON format" });
+    }
 
     // Step 2: Parse the JSON string
     const parsed = JSON.parse(jsonString);
