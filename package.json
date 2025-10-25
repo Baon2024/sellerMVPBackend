@@ -8,7 +8,7 @@
   "main": "index.js",
   "scripts": {
     "build": "echo 'No build step'",
-    "start": "node script.js",
+    "start": "node script.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
