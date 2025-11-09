@@ -70,14 +70,8 @@ console.log(`Public image URL: ${publicUrl}`);
 
   console.log("result from hfSpace is: ", result.data);
   // Step 1: Get first item in array
-    const jsonString = result.data[0];
-    if (typeof jsonString !== "string") {
-      console.error("HF response data[0] is not a string:", jsonString);
-      return res.status(500).json({ error: "Hugging Face returned invalid JSON format" });
-    }
-
-    // Step 2: Parse the JSON string
-    const parsed = JSON.parse(jsonString);
+    const parsed = result.data[0];
+    
 
     // Step 3: Destructure into variables
     const { product, condition } = parsed;
